@@ -3,7 +3,7 @@ version: "3"
 services:
   todolist:
     build:
-      context: ./todolist    # dossier contenant Dockerfile + index.html
+      context: ./todolist   # dossier contenant Dockerfile + index.html
       dockerfile: Dockerfile
     restart: always
     networks:
@@ -11,8 +11,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.todolist.rule=Host(`test.hygiestore.fr`)"
-      - "traefik.http.routers.todolist.entrypoints=web"
-      - "traefik.http.routers.todolist.entrypoints=websecure"
+      - "traefik.http.routers.todolist.entrypoints=web,websecure"
       - "traefik.http.routers.todolist.tls.certresolver=letsencrypt"
       - "traefik.http.services.todolist.loadbalancer.server.port=80"
 
