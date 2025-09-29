@@ -1,6 +1,6 @@
 project:
-  name: mon-projet
+  name: test
   docker_compose: docker-compose.yml
-  branch: main
+  branch: master
   provider: github      # <--- obligatoire
   repo: Nhust/test
