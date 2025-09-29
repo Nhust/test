@@ -10,7 +10,7 @@ services:
       - dokploy-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.todolist.rule=Host(`your-domain.com`)"  # remplace par ton domaine
+      - "traefik.http.routers.todolist.rule=Host(`35.180.139.142`)"
       - "traefik.http.routers.todolist.entrypoints=web"
       - "traefik.http.routers.todolist.entrypoints=websecure"
       - "traefik.http.routers.todolist.tls.certresolver=letsencrypt"
