@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Liste de courses</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input { padding: 8px; font-size: 16px; }
+        button { padding: 8px 12px; margin-left: 5px; cursor: pointer; }
+        ul { list-style: none; padding: 0; margin-top: 20px; }
+        li { padding: 8px; background: #f0f0f0; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .remove { background: red; color: white; border: none; padding: 4px 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h1>🛒 Ma liste de courses</h1>
+
+    <input id="itemInput" type="text" placeholder="Ajouter un article..." />
+    <button onclick="addItem()">Ajouter</button>
+
+    <ul id="list"></ul>
+
+    <script>
+        const input = document.getElementById('itemInput');
+        const list = document.getElementById('list');
+
+        function addItem() {
+            const value = input.value.trim();
+            if (!value) return;
+
+            const li = document.createElement('li');
+            li.textContent = value;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'X';
+            removeBtn.className = 'remove';
+            removeBtn.onclick = () => li.remove();
+
+            li.appendChild(removeBtn);
+            list.appendChild(li);
+            input.value = '';
+            input.focus();
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addItem();
+        });
+    </script>
+
+</body>
+</html>
