@@ -3,8 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roulette Simplifiée HTML/CSS/JS</title>
+    <title>Roulette Casino (Design CodePen)</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
+        /*
+         * CSS adapté et traduit du Less original de https://codepen.io/pder/pen/WYrRQm
+         * pour un seul fichier index.html.
+         */
+        
+        /* Variables et Reset */
+        :root {
+            --platesize: 350px;
+            --pitwidth: 32px;
+            --rimsize: 6px;
+            --trim: gold;
+            --trimSecondary: silver;
+            --spins: 8;
+            --to: 37; /* 36 numéros + 0 */
+            --rotate-angle: calc(360deg / var(--to));
+        }
+
         body {
             display: flex;
             flex-direction: column;
@@ -13,50 +31,29 @@
             background-color: #004d40; /* Vert foncé casino */
             color: #fff;
             padding-top: 20px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        /* --- Interface de Jeu et Affichage --- */
+        
+        #game-interface {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 20px;
         }
 
-        /* --- Roue de Roulette --- */
-        #roulette-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin-bottom: 30px;
+        #balance-display, #message, #result {
+            margin: 10px 0;
+            font-size: 1.2em;
+            font-weight: bold;
         }
 
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(
-                #000000 0deg 2.7deg, #ff0000 2.7deg 5.4deg, /* 0 (Noir) et 1 (Rouge) simplifiés pour l'exemple */
-                repeating-conic-gradient(
-                    #000000 0% 50%, 
-                    #ff0000 50% 100%
-                ) 5.4deg 360deg /* Utilisation d'un gradient conique pour simuler les segments */
-            );
-            border: 10px solid gold;
-            transition: transform 5s cubic-bezier(0.2, 0.8, 0.7, 1); /* Animation de 5 secondes avec décélération */
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-            transform: rotate(0deg); /* Position initiale */
-        }
-
-        #ball-indicator {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translate(-50%, -100%);
-            width: 20px;
-            height: 20px;
-            background-color: white;
-            border-radius: 50%;
-            border: 2px solid #333;
-            z-index: 10;
-        }
-
-        /* --- Tableau de Mises Simplifié --- */
+        /* Boutons de Mise Simplifiés */
         #betting-board {
             display: flex;
-            margin-bottom: 20px;
+            margin: 10px 0 20px;
         }
         .bet-option {
             padding: 10px 20px;
@@ -67,118 +64,281 @@
             font-weight: bold;
             transition: background-color 0.2s;
         }
-        .bet-option:hover {
-            opacity: 0.8;
-        }
+        .bet-option:hover { opacity: 0.8; }
         .bet-option.red { background-color: red; border-color: white;}
         .bet-option.black { background-color: black; border-color: white;}
         .bet-option.single { background-color: lightgray; color: black; width: 60px;}
 
-        /* --- Contrôles et Affichage --- */
-        #controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-        #spin-button {
+        /* --- Style des Boutons Spin/Reset --- */
+        .btn {
             padding: 10px 30px;
             font-size: 1.2em;
             cursor: pointer;
-            background-color: gold;
             border: none;
             border-radius: 5px;
-            color: #333;
-            transition: background-color 0.2s;
+            color: #fff;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px #005000;
+            background-color: #008000; /* Vert Spin */
         }
-        #spin-button:disabled {
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #005000;
+        }
+        .btn:disabled {
             background-color: #aaa;
             cursor: not-allowed;
+            box-shadow: 0 4px #888;
         }
-
-        #result, #message {
-            margin-top: 15px;
-            font-size: 1.5em;
+        .btn-reset {
+            background-color: #a00;
+            box-shadow: 0 4px #700;
+        }
+        .btn-reset:active {
+            box-shadow: 0 2px #700;
         }
         
-        #balance-display {
-            font-size: 1.2em;
-            margin-bottom: 10px;
+        /* --- Styles de la Roulette --- */
+        .main {
+            position: relative;
+            margin: 20px auto;
+            width: var(--platesize);
+            height: var(--platesize);
         }
+
+        .plate {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, var(--trim), var(--trimSecondary));
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.5);
+            /* Initial transform */
+            transform: rotateZ(0deg);
+            transition: transform 9s cubic-bezier(0.2, 0.8, 0.7, 1);
+            z-index: 10;
+        }
+        
+        /* La Bille */
+        .ball {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -7px;
+            width: 14px;
+            height: 14px;
+            background-color: #fff;
+            border-radius: 50%;
+            border: 2px solid #333;
+            box-shadow: 0 0 5px #000;
+            z-index: 99;
+            transform: translate(-50%, -150px) rotateZ(0deg); /* Position initiale */
+            transition: transform 9s cubic-bezier(0.2, 0.8, 0.7, 1);
+        }
+
+        /* Le Cône central (ou le hub) */
+        .hub {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -50px;
+            width: 100px;
+            height: 100px;
+            background: #222;
+            border-radius: 50%;
+            box-shadow: inset 0 0 15px #000;
+            z-index: 20;
+        }
+
+        /* L'indicateur au-dessus */
+        .indicator {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid red;
+            transform: translate(-50%, -15px);
+            z-index: 100;
+        }
+
+        /* --- Numéros (Pits) --- */
+        .inner {
+            position: absolute;
+            width: calc(100% - 2 * var(--rimsize));
+            height: calc(100% - 2 * var(--rimsize));
+            top: var(--rimsize);
+            left: var(--rimsize);
+            border-radius: 50%;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .number {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: var(--pitwidth);
+            height: 50%;
+            transform-origin: 0% 100%;
+            overflow: hidden;
+            transform: rotateZ(calc(var(--rotate-angle) * var(--index) - 90deg));
+            z-index: 10;
+        }
+        
+        .pit {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            /* Transforme en trapèze et aligne le texte */
+            transform: skewX(calc(90deg - var(--rotate-angle)));
+            transform-origin: 0 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Couleurs et Zéro */
+        .number:nth-child(1) .pit { background-color: #008000; color: black; } /* Zéro (Vert) */
+        .number:nth-child(even):not(:nth-child(1)) .pit { background-color: black; } /* Noir */
+        .number:nth-child(odd):not(:nth-child(1)) .pit { background-color: red; } /* Rouge */
+
+        /* Correction de la déformation du texte dans le trapèze */
+        .number span {
+            transform: skewX(calc(var(--rotate-angle) - 90deg)) rotateZ(90deg);
+            position: relative;
+            top: -20%;
+            left: 30%;
+        }
+        .number:nth-child(1) span {
+            left: 10%;
+        }
+
+        /* Cacher les radios buttons du CodePen original */
+        .number input {
+            display: none;
+        }
+        .number label {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: default;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Roulette Simplifiée 🎰</h1>
-    <div id="balance-display">Solde : 1000 €</div>
+    <div id="game-interface">
+        <h1>Roulette Casino</h1>
+        <div id="balance-display">Solde : 1000 €</div>
 
-    <h2>Placez votre mise (10 €)</h2>
-    <div id="betting-board">
-        <div class="bet-option red" data-bet-type="color" data-value="red">ROUGE</div>
-        <div class="bet-option black" data-bet-type="color" data-value="black">NOIR</div>
-        <div class="bet-option single" data-bet-type="single" data-value="1">1</div>
-        <div class="bet-option single" data-bet-type="single" data-value="17">17</div>
+        <h2>Placez votre mise (10 €)</h2>
+        <div id="betting-board">
+            <div class="bet-option red" data-bet-type="color" data-value="red">ROUGE</div>
+            <div class="bet-option black" data-bet-type="color" data-value="black">NOIR</div>
+            <div class="bet-option single" data-bet-type="single" data-value="1">1</div>
+            <div class="bet-option single" data-bet-type="single" data-value="17">17</div>
+            <div class="bet-option single" data-bet-type="single" data-value="0" style="background-color:#008000; color: white;">0</div>
+        </div>
+
+        <div id="controls">
+            <button class="btn" id="spin">
+                <span class="btn-label">Tourner</span>
+            </button>
+            <button class="btn btn-reset" id="reset" style="display:none;">
+                <span class="btn-label">Nouveau Jeu</span>
+            </button>
+        </div>
+        
+        <div id="message">Bienvenue ! Placez votre mise.</div>
+        <div id="result"></div>
     </div>
 
-    <div id="controls">
-        <button id="spin-button">Tourner la Roulette</button>
+    <div class="main">
+        <div class="indicator"></div>
+        <div class="ball" id="ball"></div>
+        <div class="plate" id="plate">
+            <ul class="inner" id="inner-wheel">
+                </ul>
+            <div class="hub"></div>
+        </div>
     </div>
-
-    <div id="roulette-container">
-        <div id="ball-indicator"></div>
-        <div id="wheel"></div>
-    </div>
-
-    <div id="message"></div>
-    <div id="result"></div>
 
     <script>
         // --- LOGIQUE DU JEU EN JAVASCRIPT ---
 
         const NUMBERS = {
-            0: 'green',
-            1: 'red', 2: 'black', 3: 'red', 4: 'black', 5: 'red', 6: 'black', 7: 'red', 8: 'black', 9: 'red', 10: 'black',
-            11: 'black', 12: 'red', 13: 'black', 14: 'red', 15: 'black', 16: 'red', 17: 'black', 18: 'red', 19: 'red',
-            20: 'black', 21: 'red', 22: 'black', 23: 'red', 24: 'black', 25: 'red', 26: 'black', 27: 'red', 28: 'black',
-            29: 'black', 30: 'red', 31: 'black', 32: 'red', 33: 'black', 34: 'red', 35: 'black', 36: 'red'
+            0: 'green', 1: 'red', 2: 'black', 3: 'red', 4: 'black', 5: 'red', 6: 'black', 7: 'red', 8: 'black', 9: 'red', 
+            10: 'black', 11: 'black', 12: 'red', 13: 'black', 14: 'red', 15: 'black', 16: 'red', 17: 'black', 18: 'red', 
+            19: 'red', 20: 'black', 21: 'red', 22: 'black', 23: 'red', 24: 'black', 25: 'red', 26: 'black', 27: 'red', 
+            28: 'black', 29: 'black', 30: 'red', 31: 'black', 32: 'red', 33: 'black', 34: 'red', 35: 'black', 36: 'red'
         };
-
-        const NUM_COUNT = 37; // 0 à 36
-        const ANGLE_PER_NUMBER = 360 / NUM_COUNT;
+        
+        // Ordre réel de la roulette européenne (CodePen)
         const ROULETTE_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+
+        const NUM_COUNT = 37;
+        const ANGLE_PER_NUMBER = 360 / NUM_COUNT;
 
         let balance = 1000;
         let currentBet = null;
         const BET_AMOUNT = 10;
+        const spinTime = 9000; // 9 secondes (durée de la transition CSS)
 
-        // --- Éléments du DOM ---
-        const wheel = document.getElementById('wheel');
-        const spinButton = document.getElementById('spin-button');
-        const resultDisplay = document.getElementById('result');
-        const messageDisplay = document.getElementById('message');
-        const balanceDisplay = document.getElementById('balance-display');
-        const betOptions = document.querySelectorAll('.bet-option');
+        // --- Éléments du DOM (Utilisation de jQuery comme dans le CodePen original) ---
+        const $plate = $('#plate');
+        const $ball = $('#ball');
+        const $spinButton = $('#spin');
+        const $resetButton = $('#reset');
+        const $resultDisplay = $('#result');
+        const $messageDisplay = $('#message');
+        const $balanceDisplay = $('#balance-display');
+        const $betOptions = $('.bet-option');
+        const $innerWheel = $('#inner-wheel');
 
-        // --- Fonctions de base ---
+        // --- Fonctions d'Initialisation et de Jeu ---
 
         function updateBalance() {
-            balanceDisplay.textContent = `Solde : ${balance} €`;
+            $balanceDisplay.text(`Solde : ${balance} €`);
+        }
+
+        function createWheelSegments() {
+            $innerWheel.empty();
+            ROULETTE_ORDER.forEach((number, index) => {
+                // Utilise la structure HTML du CodePen
+                const $li = $(`<li class="number" style="--index: ${index};">
+                                <label>
+                                    <input type="radio" name="pit" value="${number}" />
+                                    <span class="pit">${number}</span>
+                                </label>
+                              </li>`);
+                $innerWheel.append($li);
+            });
         }
 
         function placeBet(type, value) {
             if (balance < BET_AMOUNT) {
-                messageDisplay.textContent = "Solde insuffisant pour miser 10 €!";
+                $messageDisplay.text("Solde insuffisant pour miser 10 €!");
                 return;
             }
             if (currentBet) {
-                // Annuler l'ancien pari et rembourser le joueur (dans une version simple, on ne garde qu'un seul pari)
-                balance += BET_AMOUNT; 
+                balance += BET_AMOUNT; // Rembourse l'ancien pari
             }
 
-            // Placer le nouveau pari
             balance -= BET_AMOUNT;
             currentBet = { type, value, amount: BET_AMOUNT };
-            messageDisplay.textContent = `Pari placé sur ${value} pour 10 € !`;
+            $messageDisplay.text(`Pari placé sur ${value} pour 10 € !`);
             updateBalance();
         }
 
@@ -187,83 +347,100 @@
 
             const winningColor = NUMBERS[winningNumber];
             let payout = 0;
-            let winText = `Perdu ! Le numéro gagnant est ${winningNumber} (${winningColor}).`;
+            let winText = `Perdu ! Le numéro gagnant est ${winningNumber} (${winningColor.toUpperCase()}).`;
 
             // 1. Pari sur un Numéro Plein (Single) - Cote 35:1
             if (currentBet.type === 'single' && parseInt(currentBet.value) === winningNumber) {
                 payout = currentBet.amount * 35;
-                balance += payout + currentBet.amount; // Gain + Mise initiale
+                balance += payout + currentBet.amount;
                 winText = `GAGNÉ (Plein) ! ${winningNumber}. Vous remportez ${payout} € !`;
             } 
             // 2. Pari sur la Couleur (Color) - Cote 1:1
             else if (currentBet.type === 'color' && currentBet.value === winningColor && winningNumber !== 0) {
                 payout = currentBet.amount;
-                balance += payout + currentBet.amount; // Gain + Mise initiale
-                winText = `GAGNÉ (Couleur) ! ${winningNumber} est ${winningColor}. Vous remportez ${payout} € !`;
-            }
-            // 3. Cas particulier du 0 (vert) : Les chances simples (couleurs) perdent.
-            else if (winningNumber === 0) {
-                // Le solde a déjà été mis à jour par placeBet (mise déduite)
+                balance += payout + currentBet.amount;
+                winText = `GAGNÉ (Couleur) ! ${winningNumber} est ${winningColor.toUpperCase()}. Vous remportez ${payout} € !`;
             }
             
-            messageDisplay.textContent = winText;
-            currentBet = null; // Réinitialiser le pari après le tour
+            $messageDisplay.text(winText);
+            currentBet = null;
             updateBalance();
         }
 
         function spinWheel() {
             if (!currentBet) {
-                messageDisplay.textContent = "Veuillez placer un pari avant de tourner.";
+                $messageDisplay.text("Veuillez placer un pari avant de tourner.");
                 return;
             }
 
-            spinButton.disabled = true;
-            resultDisplay.textContent = '';
+            $spinButton.prop('disabled', true);
+            $resultDisplay.text('');
             
-            // 1. Déterminer le numéro gagnant (le résultat)
-            const randomDraw = Math.floor(Math.random() * NUM_COUNT);
-            const winningNumber = ROULETTE_ORDER[randomDraw]; // Utilise l'ordre réel pour la simulation visuelle
+            // 1. Déterminer le numéro gagnant
+            const randomIndex = Math.floor(Math.random() * NUM_COUNT);
+            const winningNumber = ROULETTE_ORDER[randomIndex];
 
-            // 2. Calculer l'angle de rotation final
-            // On veut que la bille s'arrête au milieu du segment du numéro gagnant.
-            // Le 0 est à 0 degré, mais les numéros sont ordonnés (voir ROULETTE_ORDER).
-            // L'angle pour le numéro gagnant est la position du numéro dans l'ordre de la roue.
-            const targetIndex = ROULETTE_ORDER.indexOf(winningNumber);
+            // 2. Calculer l'angle de rotation FINAL pour l'arrêt
             
-            // Ajouter de nombreux tours (ex: 10 tours) pour l'effet visuel
-            const baseRotation = 360 * 10;
-            // Angle nécessaire pour amener le numéro gagnant au sommet (sous l'indicateur de bille)
-            // On doit *inverser* la rotation, d'où le signe moins
-            const finalAngle = baseRotation - (targetIndex * ANGLE_PER_NUMBER) - (ANGLE_PER_NUMBER / 2); // Centrer le numéro
+            // Le CodePen utilise les classes CSS pour l'animation (pas la rotation plate/ball),
+            // mais nous allons utiliser le calcul précis pour garantir l'arrêt sur le bon numéro.
+            
+            // L'angle de rotation est calculé pour que le numéro s'arrête exactement sous l'indicateur (en haut).
+            // Le 0 est la première entrée (index 0) qui est déjà en haut dans la conception CSS.
+            
+            // Ajouter de nombreux tours pour l'effet visuel (ex: 12 tours)
+            const fullSpins = 12; 
+            
+            // Angle nécessaire pour amener le *milieu* du segment gagnant en haut.
+            // On veut tourner la PLATE.
+            const targetRotationPlate = (randomIndex * ANGLE_PER_NUMBER);
+            const finalAnglePlate = (fullSpins * 360) - targetRotationPlate - (ANGLE_PER_NUMBER / 2);
 
-            // 3. Lancer l'animation CSS
-            wheel.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.7, 1)';
-            wheel.style.transform = `rotate(${finalAngle}deg)`;
+            // La BILLE tourne dans le sens inverse de la roue pour l'effet.
+            // La bille doit s'arrêter *relativement* au même point.
+            // On fait un nombre de tours légèrement différent pour l'effet de glissement (9s vs 8s)
+            const finalAngleBall = -(fullSpins * 360) + targetRotationPlate + (ANGLE_PER_NUMBER / 2);
 
-            // 4. Déterminer le gain après l'arrêt (5 secondes)
+            // 3. Appliquer l'animation (la transition est définie en CSS)
+            
+            // Rotation de la PLATE (la roue intérieure)
+            $plate.css({
+                'transition': 'transform 8.5s cubic-bezier(0.2, 0.8, 0.7, 1)',
+                'transform': `rotateZ(-${finalAnglePlate}deg)`
+            });
+            
+            // Rotation de la BILLE
+            $ball.css({
+                'transition': 'transform 9s cubic-bezier(0.2, 0.8, 0.7, 1)',
+                'transform': `translate(-50%, -150px) rotateZ(${finalAngleBall}deg)` // -150px est le rayon
+            });
+
+            // 4. Déterminer le gain après l'arrêt
             setTimeout(() => {
-                resultDisplay.textContent = `Résultat : ${winningNumber} (${NUMBERS[winningNumber].toUpperCase()})`;
+                $resultDisplay.text(`Résultat : ${winningNumber} (${NUMBERS[winningNumber].toUpperCase()})`);
                 determineWinnings(winningNumber);
-                spinButton.disabled = false;
-            }, 5000);
+                $spinButton.prop('disabled', false);
+
+                // Réinitialiser les transitions pour le prochain tour
+                $plate.css('transition', 'none');
+                $ball.css('transition', 'none');
+                
+            }, spinTime);
         }
 
-        // --- Événements ---
+        // --- Événements et Initialisation ---
+        
+        $spinButton.on('click', spinWheel);
 
-        spinButton.addEventListener('click', spinWheel);
-
-        betOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const type = this.getAttribute('data-bet-type');
-                const value = this.getAttribute('data-value');
-                placeBet(type, value);
-            });
+        $betOptions.on('click', function() {
+            const type = $(this).data('bet-type');
+            const value = $(this).data('value');
+            placeBet(type, value);
         });
         
-        // Initialisation
+        createWheelSegments();
         updateBalance();
-        messageDisplay.textContent = "Bienvenue ! Placez votre mise.";
-
+        
     </script>
 </body>
 </html>
