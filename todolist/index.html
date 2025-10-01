@@ -5,579 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roulette Casino</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-    <script> $(document).ready(function() {
-    var $inner = $('.inner'),
-        $spin = $('#spin'),
-        $reset = $('#reset'),
-        $data = $('.data'),
-        $mask = $('.mask'),
-        maskDefault = 'Place Your Bets',
-        timer = 9000;
-
-    var red = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3];
-    
-    var selectedNumber = null;
-
-    $mask.text(maskDefault);
-
-    // Gestion de la sélection sur le tapis
-    $('.bet-number').on('click', function() {
-        $('.bet-number').removeClass('selected');
-        $(this).addClass('selected');
-        selectedNumber = $(this).data('number');
-        $('.bet-info').remove();
-        $('.betting-section').append(
-            '<div class="bet-info"><p>Mise sur le <strong>' + selectedNumber + '</strong></p></div>'
-        );
-    });
-
-    $spin.on('click', function() {
-        // Générer un numéro aléatoire entre 0 et 36
-        var randomNumber = Math.floor(Math.random() * 37);
-        var color = null;
-
-        $inner.attr('data-spinto', randomNumber).find('li:nth-child(' + (randomNumber === 0 ? 37 : randomNumber) + ') input').prop('checked', 'checked');
-
-        // Cacher le bouton spin
-        $(this).hide();
-
-        // Désactiver le reset jusqu'à la fin
-        $reset.addClass('disabled').prop('disabled', 'disabled').show();
-
-        setTimeout(function() {
-            $mask.text('No More Bets');
-        }, timer / 2);
-
-        setTimeout(function() {
-            $mask.text(maskDefault);
-        }, timer + 500);
-
-        // Afficher le résultat
-        setTimeout(function() {
-            $reset.removeClass('disabled').prop('disabled', '');
-            
-            if ($.inArray(randomNumber, red) !== -1) {
-                color = 'red';
-            } else {
-                color = 'black';
-            }
-            if (randomNumber === 0) {
-                color = 'green';
-            }
-
-            $('.result-number').text(randomNumber);
-            $('.result-color').text(color);
-            $('.result').css({'background-color': '' + color + ''});
-            $data.addClass('reveal');
-            $inner.addClass('rest');
-
-            var $thisResult = '<li class="previous-result color-' + color + '"><span class="previous-number">' + randomNumber + '</span><span class="previous-color">' + color + '</span></li>';
-            $('.previous-list').prepend($thisResult);
-
-            // Vérifier si le joueur a gagné
-            if (selectedNumber !== null) {
-                if (selectedNumber == randomNumber) {
-                    $('.bet-info').html('<p style="color: gold; font-size: 24px;">🎉 VOUS AVEZ GAGNÉ ! 🎉</p><p>Numéro gagnant : <strong>' + randomNumber + '</strong></p>');
-                } else {
-                    $('.bet-info').html('<p style="color: #ff6666;">Perdu...</p><p>Votre mise : <strong>' + selectedNumber + '</strong></p><p>Numéro gagnant : <strong>' + randomNumber + '</strong></p>');
-                }
-            }
-        }, timer);
-    });
-
-    $reset.on('click', function() {
-        // Réinitialiser
-        $inner.attr('data-spinto', '').removeClass('rest');
-        $(this).hide();
-        $spin.show();
-        $data.removeClass('reveal');
-        $('.bet-number').removeClass('selected');
-        selectedNumber = null;
-        $('.bet-info').remove();
-    });
-
-    // Support du swipe avec Hammer.js
-    var myElement = document.getElementById('plate');
-    var mc = new Hammer(myElement);
-    mc.on("swipe", function(ev) {
-        if (!$reset.hasClass('disabled')) {
-            if ($spin.is(':visible')) {
-                $spin.click();
-            } else {
-                $reset.click();
-            }
-        }
-    });
-});</script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: radial-gradient(hsl(0, 100%, 27%) 4%, hsl(0, 100%, 18%) 9%, hsla(0, 100%, 20%, 0) 9%) 0 0,
-                radial-gradient(hsl(0, 100%, 27%) 4%, hsl(0, 100%, 18%) 8%, hsla(0, 100%, 20%, 0) 10%) 50px 50px,
-                radial-gradient(hsla(0, 100%, 30%, 0.8) 20%, hsla(0, 100%, 20%, 0)) 50px 0,
-                radial-gradient(hsla(0, 100%, 30%, 0.8) 20%, hsla(0, 100%, 20%, 0)) 0 50px,
-                radial-gradient(hsla(0, 100%, 20%, 1) 35%, hsla(0, 100%, 20%, 0) 60%) 50px 0,
-                radial-gradient(hsla(0, 100%, 20%, 1) 35%, hsla(0, 100%, 20%, 0) 60%) 100px 50px,
-                radial-gradient(hsla(0, 100%, 15%, 0.7), hsla(0, 100%, 20%, 0)) 0 0,
-                radial-gradient(hsla(0, 100%, 15%, 0.7), hsla(0, 100%, 20%, 0)) 50px 50px,
-                linear-gradient(45deg, hsla(0, 100%, 20%, 0) 49%, hsla(0, 100%, 0%, 1) 50%, hsla(0, 100%, 20%, 0) 70%) 0 0,
-                linear-gradient(-45deg, hsla(0, 100%, 20%, 0) 49%, hsla(0, 100%, 0%, 1) 50%, hsla(0, 100%, 20%, 0) 70%) 0 0;
-            background-color: #300;
-            background-size: 100px 100px;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            justify-content: center;
-        }
-
-        .roulette-section {
-            flex: 1;
-            min-width: 350px;
-        }
-
-        .main {
-            width: 374px;
-            margin: 0 auto;
-        }
-
-        .plate {
-            background-color: gray;
-            width: 350px;
-            height: 350px;
-            margin: 12px;
-            border-radius: 50%;
-            position: relative;
-            animation: rotate 24s infinite linear;
-        }
-
-        .plate:after,
-        .plate:before {
-            content: '';
-            display: block;
-            position: absolute;
-            border-radius: 50%;
-        }
-
-        .plate:after {
-            top: -6px;
-            right: -6px;
-            bottom: -6px;
-            left: -6px;
-            border: 6px solid gold;
-            box-shadow: inset 0px 0px 0px 2px #b8860b, 0px 0px 0px 2px #ffd700;
-        }
-
-        .plate:before {
-            background: rgba(0, 0, 0, .65);
-            border: 1px solid silver;
-            box-shadow: inset 0px 0px 0px 2px #4a4a4a;
-            top: 12%;
-            left: 12%;
-            right: 12%;
-            bottom: 12%;
-            z-index: 1;
-        }
-
-        .number {
-            width: 32px;
-            height: 175px;
-            display: inline-block;
-            text-align: center;
-            position: absolute;
-            top: 0;
-            left: calc(50% - 16px);
-            transform-origin: 50% 100%;
-            background-color: transparent;
-            border-left: 16px solid transparent;
-            border-right: 16px solid transparent;
-            border-top: 175px solid black;
-            box-sizing: border-box;
-        }
-
-        .number:nth-child(odd) {
-            border-top-color: red;
-        }
-
-        .number:nth-child(37) {
-            border-top-color: green;
-        }
-
-        .number input {
-            display: none;
-        }
-
-        .pit {
-            color: #fff;
-            padding-top: 12px;
-            width: 32px;
-            display: inline-block;
-            font-size: 12px;
-            transform: scale(1, 1.8);
-            position: absolute;
-            top: -175px;
-            left: -16px;
-        }
-
-        .inner {
-            display: block;
-            height: 350px;
-            width: 350px;
-            position: relative;
-        }
-
-        .inner:after,
-        .inner:before {
-            content: '';
-            display: block;
-            position: absolute;
-            border-radius: 50%;
-        }
-
-        .inner:after {
-            z-index: 3;
-            top: 24%;
-            right: 24%;
-            bottom: 24%;
-            left: 24%;
-            background-color: #1a1a1a;
-            border: 3px solid #4a4a4a;
-        }
-
-        .inner:before {
-            top: 24%;
-            bottom: 21%;
-            left: 24%;
-            right: 22%;
-            content: '';
-            color: #fff;
-            font-size: 60px;
-            z-index: 5;
-            border-radius: 0;
-        }
-
-        .inner.rest:before {
-            transition: top .5s ease-in, right .5s ease-in, bottom .5s ease-in, left .5s ease-in;
-            top: 25%;
-            right: 25%;
-            bottom: 24%;
-            left: 25%;
-        }
-
-        .btn {
-            background: green;
-            border: 1px solid darkgreen;
-            border-top-color: #00cc00;
-            border-left-color: #00cc00;
-            padding: 12px 24px;
-            margin: 12px;
-            display: inline-block;
-            font-size: 15px;
-            width: calc(50% - 24px);
-            cursor: pointer;
-            color: #fff;
-            font-family: 'Roboto', sans-serif;
-            border-radius: 3px;
-        }
-
-        .btn.btn-reset {
-            background: darkgreen;
-            border: 1px solid #003300;
-            border-top-color: green;
-            border-left-color: green;
-        }
-
-        .btn.disabled {
-            opacity: .2;
-            transition: opacity .24s linear;
-            cursor: not-allowed;
-        }
-
-        @keyframes rotate {
-            0% {
-                transform: rotateZ(0deg);
-            }
-            100% {
-                transform: rotateZ(360deg);
-            }
-        }
-
-        .data {
-            display: block;
-            position: absolute;
-            top: 30%;
-            right: 30%;
-            bottom: 30%;
-            left: 30%;
-            border-radius: 50%;
-            animation: rotate 24s reverse linear infinite;
-            perspective: 2000px;
-            z-index: 100;
-        }
-
-        .data-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.72s;
-            transform-style: preserve-3d;
-        }
-
-        .data.reveal .data-inner {
-            transform: rotateY(180deg);
-        }
-
-        .mask,
-        .result {
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            position: absolute;
-            backface-visibility: hidden;
-            border-radius: 50%;
-            overflow: hidden;
-            display: inline-block;
-        }
-
-        .mask {
-            color: #fff;
-            font-size: 24px;
-            margin: auto;
-            line-height: 1.4;
-            padding-top: 36px;
-        }
-
-        .result {
-            background-color: green;
-            color: white;
-            transform: rotateY(180deg);
-            align-items: center;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .result-number {
-            font-size: 72px;
-            font-weight: 500;
-            line-height: 1.2;
-        }
-
-        .result-color {
-            text-transform: uppercase;
-            font-size: 21px;
-            line-height: 1;
-        }
-
-        .previous-results {
-            max-width: 350px;
-            margin: 24px 12px;
-        }
-
-        .previous-result {
-            display: flex;
-            margin: 1px;
-            padding: 12px;
-            color: #fff;
-        }
-
-        .previous-result:first-child {
-            animation: flipin .48s ease-out;
-        }
-
-        .previous-number {
-            flex: 1;
-        }
-
-        .color-green {
-            background-color: green;
-        }
-
-        .color-black {
-            background-color: black;
-        }
-
-        .color-red {
-            background-color: red;
-        }
-
-        @keyframes flipin {
-            0% {
-                transform: rotateX(90deg);
-            }
-            100% {
-                transform: rotateX(0deg);
-            }
-        }
-
-        /* Tapis de mise */
-        .betting-section {
-            background: #0a5c0a;
-            padding: 20px;
-            border-radius: 10px;
-            border: 4px solid gold;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .betting-section h2 {
-            color: gold;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-
-        .betting-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .bet-number {
-            background: #1a1a1a;
-            color: white;
-            border: 2px solid gold;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 20px;
-            font-weight: bold;
-            transition: all 0.3s;
-            border-radius: 5px;
-        }
-
-        .bet-number:hover {
-            background: #2a2a2a;
-            transform: scale(1.05);
-        }
-
-        .bet-number.red {
-            background: #8b0000;
-        }
-
-        .bet-number.black {
-            background: #1a1a1a;
-        }
-
-        .bet-number.green {
-            background: #0a5c0a;
-            grid-column: span 3;
-        }
-
-        .bet-number.selected {
-            box-shadow: 0 0 20px #ffd700, inset 0 0 20px #ffd700;
-            border-color: #fff;
-        }
-
-        .bet-info {
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .bet-info p {
-            margin: 5px 0;
-            font-size: 18px;
-        }
-
-        /* Rotations pour chaque numéro */
-        .number:nth-child(1) { transform: rotateZ(9.72973deg); }
-        .number:nth-child(2) { transform: rotateZ(19.45946deg); }
-        .number:nth-child(3) { transform: rotateZ(29.18919deg); }
-        .number:nth-child(4) { transform: rotateZ(38.91892deg); }
-        .number:nth-child(5) { transform: rotateZ(48.64865deg); }
-        .number:nth-child(6) { transform: rotateZ(58.37838deg); }
-        .number:nth-child(7) { transform: rotateZ(68.10811deg); }
-        .number:nth-child(8) { transform: rotateZ(77.83784deg); }
-        .number:nth-child(9) { transform: rotateZ(87.56757deg); }
-        .number:nth-child(10) { transform: rotateZ(97.2973deg); }
-        .number:nth-child(11) { transform: rotateZ(107.02703deg); }
-        .number:nth-child(12) { transform: rotateZ(116.75676deg); }
-        .number:nth-child(13) { transform: rotateZ(126.48649deg); }
-        .number:nth-child(14) { transform: rotateZ(136.21622deg); }
-        .number:nth-child(15) { transform: rotateZ(145.94595deg); }
-        .number:nth-child(16) { transform: rotateZ(155.67568deg); }
-        .number:nth-child(17) { transform: rotateZ(165.40541deg); }
-        .number:nth-child(18) { transform: rotateZ(175.13514deg); }
-        .number:nth-child(19) { transform: rotateZ(184.86486deg); }
-        .number:nth-child(20) { transform: rotateZ(194.59459deg); }
-        .number:nth-child(21) { transform: rotateZ(204.32432deg); }
-        .number:nth-child(22) { transform: rotateZ(214.05405deg); }
-        .number:nth-child(23) { transform: rotateZ(223.78378deg); }
-        .number:nth-child(24) { transform: rotateZ(233.51351deg); }
-        .number:nth-child(25) { transform: rotateZ(243.24324deg); }
-        .number:nth-child(26) { transform: rotateZ(252.97297deg); }
-        .number:nth-child(27) { transform: rotateZ(262.7027deg); }
-        .number:nth-child(28) { transform: rotateZ(272.43243deg); }
-        .number:nth-child(29) { transform: rotateZ(282.16216deg); }
-        .number:nth-child(30) { transform: rotateZ(291.89189deg); }
-        .number:nth-child(31) { transform: rotateZ(301.62162deg); }
-        .number:nth-child(32) { transform: rotateZ(311.35135deg); }
-        .number:nth-child(33) { transform: rotateZ(321.08108deg); }
-        .number:nth-child(34) { transform: rotateZ(330.81081deg); }
-        .number:nth-child(35) { transform: rotateZ(340.54054deg); }
-        .number:nth-child(36) { transform: rotateZ(350.27027deg); }
-        .number:nth-child(37) { transform: rotateZ(360deg); }
-
-        /* Animations de rotation pour la bille */
-        .inner[data-spinto='1']:before { transform: rotateZ(-2602deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='2']:before { transform: rotateZ(-2774deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='3']:before { transform: rotateZ(-2850deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='4']:before { transform: rotateZ(-2793deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='5']:before { transform: rotateZ(-2642deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='6']:before { transform: rotateZ(-2734deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='7']:before { transform: rotateZ(-2526deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='8']:before { transform: rotateZ(-2673deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='9']:before { transform: rotateZ(-2564deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='10']:before { transform: rotateZ(-2652deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='11']:before { transform: rotateZ(-2693deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='12']:before { transform: rotateZ(-2868deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='13']:before { transform: rotateZ(-2714deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='14']:before { transform: rotateZ(-2582deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='15']:before { transform: rotateZ(-2813deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='16']:before { transform: rotateZ(-2622deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='17']:before { transform: rotateZ(-2755deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='18']:before { transform: rotateZ(-2545deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='19']:before { transform: rotateZ(-2803deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='20']:before { transform: rotateZ(-2592deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='21']:before { transform: rotateZ(-2784deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='22']:before { transform: rotateZ(-2554deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='23']:before { transform: rotateZ(-2662deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='24']:before { transform: rotateZ(-2632deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='25']:before { transform: rotateZ(-2764deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='26']:before { transform: rotateZ(-2840deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='27']:before { transform: rotateZ(-2724deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='28']:before { transform: rotateZ(-2877deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='29']:before { transform: rotateZ(-2535deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='30']:before { transform: rotateZ(-2684deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='31']:before { transform: rotateZ(-2573deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='32']:before { transform: rotateZ(-2822deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='33']:before { transform: rotateZ(-2612deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='34']:before { transform: rotateZ(-2745deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='35']:before { transform: rotateZ(-2499deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='36']:before { transform: rotateZ(-2703deg); transition: transform 9s ease-out; content: '\2022'; }
-        .inner[data-spinto='0']:before { transform: rotateZ(-2831deg); transition: transform 9s ease-out; content: '\2022'; }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -643,47 +73,86 @@
 
         <div class="betting-section">
             <h2>🎰 Tapis de Mise</h2>
-            <div class="betting-grid">
-                <div class="bet-number green" data-number="0">0</div>
-                <div class="bet-number red" data-number="32">32</div>
-                <div class="bet-number black" data-number="15">15</div>
-                <div class="bet-number red" data-number="19">19</div>
-                <div class="bet-number black" data-number="4">4</div>
-                <div class="bet-number red" data-number="21">21</div>
-                <div class="bet-number black" data-number="2">2</div>
-                <div class="bet-number red" data-number="25">25</div>
-                <div class="bet-number black" data-number="17">17</div>
-                <div class="bet-number red" data-number="34">34</div>
-                <div class="bet-number black" data-number="6">6</div>
-                <div class="bet-number red" data-number="27">27</div>
-                <div class="bet-number black" data-number="13">13</div>
-                <div class="bet-number red" data-number="36">36</div>
-                <div class="bet-number black" data-number="11">11</div>
-                <div class="bet-number red" data-number="30">30</div>
-                <div class="bet-number black" data-number="8">8</div>
-                <div class="bet-number red" data-number="23">23</div>
-                <div class="bet-number black" data-number="10">10</div>
-                <div class="bet-number red" data-number="5">5</div>
-                <div class="bet-number black" data-number="24">24</div>
-                <div class="bet-number red" data-number="16">16</div>
-                <div class="bet-number black" data-number="33">33</div>
-                <div class="bet-number red" data-number="1">1</div>
-                <div class="bet-number black" data-number="20">20</div>
-                <div class="bet-number red" data-number="14">14</div>
-                <div class="bet-number black" data-number="31">31</div>
-                <div class="bet-number red" data-number="9">9</div>
-                <div class="bet-number black" data-number="22">22</div>
-                <div class="bet-number red" data-number="18">18</div>
-                <div class="bet-number black" data-number="29">29</div>
-                <div class="bet-number red" data-number="7">7</div>
-                <div class="bet-number black" data-number="28">28</div>
-                <div class="bet-number red" data-number="12">12</div>
-                <div class="bet-number black" data-number="35">35</div>
-                <div class="bet-number red" data-number="3">3</div>
-                <div class="bet-number black" data-number="26">26</div>
+            
+            <!-- Tableau principal avec les numéros -->
+            <div class="betting-table">
+                <!-- Zéro -->
+                <div class="bet-cell zero-cell" data-bet-type="number" data-value="0">
+                    <span>0</span>
+                </div>
+                
+                <!-- Grille des numéros 1-36 -->
+                <div class="numbers-grid">
+                    <!-- Ligne 1 -->
+                    <div class="bet-cell red" data-bet-type="number" data-value="3">3</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="6">6</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="9">9</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="12">12</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="15">15</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="18">18</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="21">21</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="24">24</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="27">27</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="30">30</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="33">33</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="36">36</div>
+                    <div class="bet-cell column-bet" data-bet-type="column" data-value="3">2:1</div>
+                    
+                    <!-- Ligne 2 -->
+                    <div class="bet-cell black" data-bet-type="number" data-value="2">2</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="5">5</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="8">8</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="11">11</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="14">14</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="17">17</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="20">20</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="23">23</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="26">26</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="29">29</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="32">32</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="35">35</div>
+                    <div class="bet-cell column-bet" data-bet-type="column" data-value="2">2:1</div>
+                    
+                    <!-- Ligne 3 -->
+                    <div class="bet-cell red" data-bet-type="number" data-value="1">1</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="4">4</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="7">7</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="10">10</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="13">13</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="16">16</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="19">19</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="22">22</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="25">25</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="28">28</div>
+                    <div class="bet-cell black" data-bet-type="number" data-value="31">31</div>
+                    <div class="bet-cell red" data-bet-type="number" data-value="34">34</div>
+                    <div class="bet-cell column-bet" data-bet-type="column" data-value="1">2:1</div>
+                </div>
+            </div>
+
+            <!-- Paris extérieurs -->
+            <div class="outside-bets">
+                <div class="bet-cell outside-bet" data-bet-type="dozen" data-value="1">1er 12</div>
+                <div class="bet-cell outside-bet" data-bet-type="dozen" data-value="2">2ème 12</div>
+                <div class="bet-cell outside-bet" data-bet-type="dozen" data-value="3">3ème 12</div>
+            </div>
+
+            <div class="outside-bets">
+                <div class="bet-cell outside-bet" data-bet-type="low" data-value="1-18">1-18</div>
+                <div class="bet-cell outside-bet" data-bet-type="even" data-value="even">PAIR</div>
+                <div class="bet-cell outside-bet red-bet" data-bet-type="color" data-value="red">◆</div>
+                <div class="bet-cell outside-bet black-bet" data-bet-type="color" data-value="black">◆</div>
+                <div class="bet-cell outside-bet" data-bet-type="odd" data-value="odd">IMPAIR</div>
+                <div class="bet-cell outside-bet" data-bet-type="high" data-value="19-36">19-36</div>
+            </div>
+
+            <!-- Affichage de la mise -->
+            <div class="bet-info" style="display:none;">
+                <p><strong>Votre mise :</strong> <span id="bet-description"></span></p>
             </div>
         </div>
     </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
-
