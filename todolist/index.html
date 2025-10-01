@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+²²²²²²²²²²²²²²²²²²²²²²²²²²²²²²²²²<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,110 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script> $(document).ready(function() {
+    var $inner = $('.inner'),
+        $spin = $('#spin'),
+        $reset = $('#reset'),
+        $data = $('.data'),
+        $mask = $('.mask'),
+        maskDefault = 'Place Your Bets',
+        timer = 9000;
+
+    var red = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3];
+    
+    var selectedNumber = null;
+
+    $mask.text(maskDefault);
+
+    // Gestion de la sélection sur le tapis
+    $('.bet-number').on('click', function() {
+        $('.bet-number').removeClass('selected');
+        $(this).addClass('selected');
+        selectedNumber = $(this).data('number');
+        $('.bet-info').remove();
+        $('.betting-section').append(
+            '<div class="bet-info"><p>Mise sur le <strong>' + selectedNumber + '</strong></p></div>'
+        );
+    });
+
+    $spin.on('click', function() {
+        // Générer un numéro aléatoire entre 0 et 36
+        var randomNumber = Math.floor(Math.random() * 37);
+        var color = null;
+
+        $inner.attr('data-spinto', randomNumber).find('li:nth-child(' + (randomNumber === 0 ? 37 : randomNumber) + ') input').prop('checked', 'checked');
+
+        // Cacher le bouton spin
+        $(this).hide();
+
+        // Désactiver le reset jusqu'à la fin
+        $reset.addClass('disabled').prop('disabled', 'disabled').show();
+
+        setTimeout(function() {
+            $mask.text('No More Bets');
+        }, timer / 2);
+
+        setTimeout(function() {
+            $mask.text(maskDefault);
+        }, timer + 500);
+
+        // Afficher le résultat
+        setTimeout(function() {
+            $reset.removeClass('disabled').prop('disabled', '');
+            
+            if ($.inArray(randomNumber, red) !== -1) {
+                color = 'red';
+            } else {
+                color = 'black';
+            }
+            if (randomNumber === 0) {
+                color = 'green';
+            }
+
+            $('.result-number').text(randomNumber);
+            $('.result-color').text(color);
+            $('.result').css({'background-color': '' + color + ''});
+            $data.addClass('reveal');
+            $inner.addClass('rest');
+
+            var $thisResult = '<li class="previous-result color-' + color + '"><span class="previous-number">' + randomNumber + '</span><span class="previous-color">' + color + '</span></li>';
+            $('.previous-list').prepend($thisResult);
+
+            // Vérifier si le joueur a gagné
+            if (selectedNumber !== null) {
+                if (selectedNumber == randomNumber) {
+                    $('.bet-info').html('<p style="color: gold; font-size: 24px;">🎉 VOUS AVEZ GAGNÉ ! 🎉</p><p>Numéro gagnant : <strong>' + randomNumber + '</strong></p>');
+                } else {
+                    $('.bet-info').html('<p style="color: #ff6666;">Perdu...</p><p>Votre mise : <strong>' + selectedNumber + '</strong></p><p>Numéro gagnant : <strong>' + randomNumber + '</strong></p>');
+                }
+            }
+        }, timer);
+    });
+
+    $reset.on('click', function() {
+        // Réinitialiser
+        $inner.attr('data-spinto', '').removeClass('rest');
+        $(this).hide();
+        $spin.show();
+        $data.removeClass('reveal');
+        $('.bet-number').removeClass('selected');
+        selectedNumber = null;
+        $('.bet-info').remove();
+    });
+
+    // Support du swipe avec Hammer.js
+    var myElement = document.getElementById('plate');
+    var mc = new Hammer(myElement);
+    mc.on("swipe", function(ev) {
+        if (!$reset.hasClass('disabled')) {
+            if ($spin.is(':visible')) {
+                $spin.click();
+            } else {
+                $reset.click();
+            }
+        }
+    });
+});</script>
     <style>
         * {
             margin: 0;
@@ -560,4 +664,26 @@
                 <div class="bet-number red" data-number="23">23</div>
                 <div class="bet-number black" data-number="10">10</div>
                 <div class="bet-number red" data-number="5">5</div>
-                <div class="bet-number black" data-number="24">24
+                <div class="bet-number black" data-number="24">24</div>
+                <div class="bet-number red" data-number="16">16</div>
+                <div class="bet-number black" data-number="33">33</div>
+                <div class="bet-number red" data-number="1">1</div>
+                <div class="bet-number black" data-number="20">20</div>
+                <div class="bet-number red" data-number="14">14</div>
+                <div class="bet-number black" data-number="31">31</div>
+                <div class="bet-number red" data-number="9">9</div>
+                <div class="bet-number black" data-number="22">22</div>
+                <div class="bet-number red" data-number="18">18</div>
+                <div class="bet-number black" data-number="29">29</div>
+                <div class="bet-number red" data-number="7">7</div>
+                <div class="bet-number black" data-number="28">28</div>
+                <div class="bet-number red" data-number="12">12</div>
+                <div class="bet-number black" data-number="35">35</div>
+                <div class="bet-number red" data-number="3">3</div>
+                <div class="bet-number black" data-number="26">26</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
