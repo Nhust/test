@@ -1,132 +1,269 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Jeu d'évitement</title>
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        background-color: #f0f0f0;
-    }
-    #gameArea {
-        position: relative;
-        width: 400px;
-        height: 600px;
-        margin: 50px auto;
-        background-color: #fff;
-        border: 2px solid #333;
-        overflow: hidden;
-    }
-    #player {
-        width: 40px;
-        height: 40px;
-        background-color: blue;
-        position: absolute;
-        bottom: 10px;
-        left: 180px;
-    }
-    .obstacle {
-        width: 40px;
-        height: 40px;
-        background-color: red;
-        position: absolute;
-        top: 0;
-    }
-    #score {
-        font-size: 24px;
-        margin-top: 20px;
-    }
-    button {
-        margin-top: 20px;
-        font-size: 16px;
-        padding: 10px 20px;
-        cursor: pointer;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette Simplifiée HTML/CSS/JS</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #004d40; /* Vert foncé casino */
+            color: #fff;
+            padding-top: 20px;
+        }
+
+        /* --- Roue de Roulette --- */
+        #roulette-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #000000 0deg 2.7deg, #ff0000 2.7deg 5.4deg, /* 0 (Noir) et 1 (Rouge) simplifiés pour l'exemple */
+                repeating-conic-gradient(
+                    #000000 0% 50%, 
+                    #ff0000 50% 100%
+                ) 5.4deg 360deg /* Utilisation d'un gradient conique pour simuler les segments */
+            );
+            border: 10px solid gold;
+            transition: transform 5s cubic-bezier(0.2, 0.8, 0.7, 1); /* Animation de 5 secondes avec décélération */
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            transform: rotate(0deg); /* Position initiale */
+        }
+
+        #ball-indicator {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            border: 2px solid #333;
+            z-index: 10;
+        }
+
+        /* --- Tableau de Mises Simplifié --- */
+        #betting-board {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .bet-option {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .bet-option:hover {
+            opacity: 0.8;
+        }
+        .bet-option.red { background-color: red; border-color: white;}
+        .bet-option.black { background-color: black; border-color: white;}
+        .bet-option.single { background-color: lightgray; color: black; width: 60px;}
+
+        /* --- Contrôles et Affichage --- */
+        #controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        #spin-button {
+            padding: 10px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: gold;
+            border: none;
+            border-radius: 5px;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+        #spin-button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        #result, #message {
+            margin-top: 15px;
+            font-size: 1.5em;
+        }
+        
+        #balance-display {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-<h1>Jeu d'évitement</h1>
-<div id="gameArea">
-    <div id="player"></div>
-</div>
-<div id="score">Score : 0</div>
-<button id="startBtn">Démarrer le jeu</button>
 
-<script>
-const gameArea = document.getElementById('gameArea');
-const player = document.getElementById('player');
-const scoreDisplay = document.getElementById('score');
-const startBtn = document.getElementById('startBtn');
+    <h1>Roulette Simplifiée 🎰</h1>
+    <div id="balance-display">Solde : 1000 €</div>
 
-let obstacles = [];
-let score = 0;
-let gameOver = false;
-let gameInterval;
+    <h2>Placez votre mise (10 €)</h2>
+    <div id="betting-board">
+        <div class="bet-option red" data-bet-type="color" data-value="red">ROUGE</div>
+        <div class="bet-option black" data-bet-type="color" data-value="black">NOIR</div>
+        <div class="bet-option single" data-bet-type="single" data-value="1">1</div>
+        <div class="bet-option single" data-bet-type="single" data-value="17">17</div>
+    </div>
 
-const playerSpeed = 10;
-const obstacleSpeed = 4;
+    <div id="controls">
+        <button id="spin-button">Tourner la Roulette</button>
+    </div>
 
-document.addEventListener('keydown', (e) => {
-    const left = parseInt(player.style.left);
-    if (e.key === 'ArrowLeft' && left > 0) {
-        player.style.left = left - playerSpeed + 'px';
-    } else if (e.key === 'ArrowRight' && left < gameArea.clientWidth - player.clientWidth) {
-        player.style.left = left + playerSpeed + 'px';
-    }
-});
+    <div id="roulette-container">
+        <div id="ball-indicator"></div>
+        <div id="wheel"></div>
+    </div>
 
-function createObstacle() {
-    const obstacle = document.createElement('div');
-    obstacle.classList.add('obstacle');
-    obstacle.style.left = Math.random() * (gameArea.clientWidth - 40) + 'px';
-    gameArea.appendChild(obstacle);
-    obstacles.push(obstacle);
-}
+    <div id="message"></div>
+    <div id="result"></div>
 
-function moveObstacles() {
-    obstacles.forEach((obs, index) => {
-        obs.style.top = (parseInt(obs.style.top) || 0) + obstacleSpeed + 'px';
-        if (parseInt(obs.style.top) > gameArea.clientHeight) {
-            obs.remove();
-            obstacles.splice(index, 1);
-            score++;
-            scoreDisplay.textContent = 'Score : ' + score;
+    <script>
+        // --- LOGIQUE DU JEU EN JAVASCRIPT ---
+
+        const NUMBERS = {
+            0: 'green',
+            1: 'red', 2: 'black', 3: 'red', 4: 'black', 5: 'red', 6: 'black', 7: 'red', 8: 'black', 9: 'red', 10: 'black',
+            11: 'black', 12: 'red', 13: 'black', 14: 'red', 15: 'black', 16: 'red', 17: 'black', 18: 'red', 19: 'red',
+            20: 'black', 21: 'red', 22: 'black', 23: 'red', 24: 'black', 25: 'red', 26: 'black', 27: 'red', 28: 'black',
+            29: 'black', 30: 'red', 31: 'black', 32: 'red', 33: 'black', 34: 'red', 35: 'black', 36: 'red'
+        };
+
+        const NUM_COUNT = 37; // 0 à 36
+        const ANGLE_PER_NUMBER = 360 / NUM_COUNT;
+        const ROULETTE_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+
+        let balance = 1000;
+        let currentBet = null;
+        const BET_AMOUNT = 10;
+
+        // --- Éléments du DOM ---
+        const wheel = document.getElementById('wheel');
+        const spinButton = document.getElementById('spin-button');
+        const resultDisplay = document.getElementById('result');
+        const messageDisplay = document.getElementById('message');
+        const balanceDisplay = document.getElementById('balance-display');
+        const betOptions = document.querySelectorAll('.bet-option');
+
+        // --- Fonctions de base ---
+
+        function updateBalance() {
+            balanceDisplay.textContent = `Solde : ${balance} €`;
         }
 
-        // Collision detection
-        const obsRect = obs.getBoundingClientRect();
-        const playerRect = player.getBoundingClientRect();
-        if (!(obsRect.right < playerRect.left ||
-              obsRect.left > playerRect.right ||
-              obsRect.bottom < playerRect.top ||
-              obsRect.top > playerRect.bottom)) {
-            endGame();
+        function placeBet(type, value) {
+            if (balance < BET_AMOUNT) {
+                messageDisplay.textContent = "Solde insuffisant pour miser 10 €!";
+                return;
+            }
+            if (currentBet) {
+                // Annuler l'ancien pari et rembourser le joueur (dans une version simple, on ne garde qu'un seul pari)
+                balance += BET_AMOUNT; 
+            }
+
+            // Placer le nouveau pari
+            balance -= BET_AMOUNT;
+            currentBet = { type, value, amount: BET_AMOUNT };
+            messageDisplay.textContent = `Pari placé sur ${value} pour 10 € !`;
+            updateBalance();
         }
-    });
-}
 
-function endGame() {
-    clearInterval(gameInterval);
-    obstacles.forEach(o => o.remove());
-    obstacles = [];
-    gameOver = true;
-    alert('Game Over ! Ton score : ' + score);
-}
+        function determineWinnings(winningNumber) {
+            if (!currentBet) return;
 
-function startGame() {
-    score = 0;
-    gameOver = false;
-    scoreDisplay.textContent = 'Score : 0';
-    player.style.left = '180px';
-    gameInterval = setInterval(() => {
-        if (Math.random() < 0.03) createObstacle();
-        moveObstacles();
-    }, 20);
-}
+            const winningColor = NUMBERS[winningNumber];
+            let payout = 0;
+            let winText = `Perdu ! Le numéro gagnant est ${winningNumber} (${winningColor}).`;
 
-startBtn.addEventListener('click', startGame);
-</script>
+            // 1. Pari sur un Numéro Plein (Single) - Cote 35:1
+            if (currentBet.type === 'single' && parseInt(currentBet.value) === winningNumber) {
+                payout = currentBet.amount * 35;
+                balance += payout + currentBet.amount; // Gain + Mise initiale
+                winText = `GAGNÉ (Plein) ! ${winningNumber}. Vous remportez ${payout} € !`;
+            } 
+            // 2. Pari sur la Couleur (Color) - Cote 1:1
+            else if (currentBet.type === 'color' && currentBet.value === winningColor && winningNumber !== 0) {
+                payout = currentBet.amount;
+                balance += payout + currentBet.amount; // Gain + Mise initiale
+                winText = `GAGNÉ (Couleur) ! ${winningNumber} est ${winningColor}. Vous remportez ${payout} € !`;
+            }
+            // 3. Cas particulier du 0 (vert) : Les chances simples (couleurs) perdent.
+            else if (winningNumber === 0) {
+                // Le solde a déjà été mis à jour par placeBet (mise déduite)
+            }
+            
+            messageDisplay.textContent = winText;
+            currentBet = null; // Réinitialiser le pari après le tour
+            updateBalance();
+        }
+
+        function spinWheel() {
+            if (!currentBet) {
+                messageDisplay.textContent = "Veuillez placer un pari avant de tourner.";
+                return;
+            }
+
+            spinButton.disabled = true;
+            resultDisplay.textContent = '';
+            
+            // 1. Déterminer le numéro gagnant (le résultat)
+            const randomDraw = Math.floor(Math.random() * NUM_COUNT);
+            const winningNumber = ROULETTE_ORDER[randomDraw]; // Utilise l'ordre réel pour la simulation visuelle
+
+            // 2. Calculer l'angle de rotation final
+            // On veut que la bille s'arrête au milieu du segment du numéro gagnant.
+            // Le 0 est à 0 degré, mais les numéros sont ordonnés (voir ROULETTE_ORDER).
+            // L'angle pour le numéro gagnant est la position du numéro dans l'ordre de la roue.
+            const targetIndex = ROULETTE_ORDER.indexOf(winningNumber);
+            
+            // Ajouter de nombreux tours (ex: 10 tours) pour l'effet visuel
+            const baseRotation = 360 * 10;
+            // Angle nécessaire pour amener le numéro gagnant au sommet (sous l'indicateur de bille)
+            // On doit *inverser* la rotation, d'où le signe moins
+            const finalAngle = baseRotation - (targetIndex * ANGLE_PER_NUMBER) - (ANGLE_PER_NUMBER / 2); // Centrer le numéro
+
+            // 3. Lancer l'animation CSS
+            wheel.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.7, 1)';
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
+
+            // 4. Déterminer le gain après l'arrêt (5 secondes)
+            setTimeout(() => {
+                resultDisplay.textContent = `Résultat : ${winningNumber} (${NUMBERS[winningNumber].toUpperCase()})`;
+                determineWinnings(winningNumber);
+                spinButton.disabled = false;
+            }, 5000);
+        }
+
+        // --- Événements ---
+
+        spinButton.addEventListener('click', spinWheel);
+
+        betOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const type = this.getAttribute('data-bet-type');
+                const value = this.getAttribute('data-value');
+                placeBet(type, value);
+            });
+        });
+        
+        // Initialisation
+        updateBalance();
+        messageDisplay.textContent = "Bienvenue ! Placez votre mise.";
+
+    </script>
 </body>
 </html>
