@@ -1,52 +1,132 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <title>Liste de courses</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        input { padding: 8px; font-size: 16px; }
-        button { padding: 8px 12px; margin-left: 5px; cursor: pointer; }
-        ul { list-style: none; padding: 0; margin-top: 20px; }
-        li { padding: 8px; background: #f0f0f0; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .remove { background: red; color: white; border: none; padding: 4px 8px; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<title>Jeu d'évitement</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f0f0f0;
+    }
+    #gameArea {
+        position: relative;
+        width: 400px;
+        height: 600px;
+        margin: 50px auto;
+        background-color: #fff;
+        border: 2px solid #333;
+        overflow: hidden;
+    }
+    #player {
+        width: 40px;
+        height: 40px;
+        background-color: blue;
+        position: absolute;
+        bottom: 10px;
+        left: 180px;
+    }
+    .obstacle {
+        width: 40px;
+        height: 40px;
+        background-color: red;
+        position: absolute;
+        top: 0;
+    }
+    #score {
+        font-size: 24px;
+        margin-top: 20px;
+    }
+    button {
+        margin-top: 20px;
+        font-size: 16px;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+</style>
 </head>
 <body>
+<h1>Jeu d'évitement</h1>
+<div id="gameArea">
+    <div id="player"></div>
+</div>
+<div id="score">Score : 0</div>
+<button id="startBtn">Démarrer le jeu</button>
 
-    <h1>🛒 Ma liste de courses</h1>
+<script>
+const gameArea = document.getElementById('gameArea');
+const player = document.getElementById('player');
+const scoreDisplay = document.getElementById('score');
+const startBtn = document.getElementById('startBtn');
 
-    <input id="itemInput" type="text" placeholder="Ajouter un article..." />
-    <button onclick="addItem()">Ajouter</button>
+let obstacles = [];
+let score = 0;
+let gameOver = false;
+let gameInterval;
 
-    <ul id="list"></ul>
+const playerSpeed = 10;
+const obstacleSpeed = 4;
 
-    <script>
-        const input = document.getElementById('itemInput');
-        const list = document.getElementById('list');
+document.addEventListener('keydown', (e) => {
+    const left = parseInt(player.style.left);
+    if (e.key === 'ArrowLeft' && left > 0) {
+        player.style.left = left - playerSpeed + 'px';
+    } else if (e.key === 'ArrowRight' && left < gameArea.clientWidth - player.clientWidth) {
+        player.style.left = left + playerSpeed + 'px';
+    }
+});
 
-        function addItem() {
-            const value = input.value.trim();
-            if (!value) return;
+function createObstacle() {
+    const obstacle = document.createElement('div');
+    obstacle.classList.add('obstacle');
+    obstacle.style.left = Math.random() * (gameArea.clientWidth - 40) + 'px';
+    gameArea.appendChild(obstacle);
+    obstacles.push(obstacle);
+}
 
-            const li = document.createElement('li');
-            li.textContent = value;
-
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = 'X';
-            removeBtn.className = 'remove';
-            removeBtn.onclick = () => li.remove();
-
-            li.appendChild(removeBtn);
-            list.appendChild(li);
-            input.value = '';
-            input.focus();
+function moveObstacles() {
+    obstacles.forEach((obs, index) => {
+        obs.style.top = (parseInt(obs.style.top) || 0) + obstacleSpeed + 'px';
+        if (parseInt(obs.style.top) > gameArea.clientHeight) {
+            obs.remove();
+            obstacles.splice(index, 1);
+            score++;
+            scoreDisplay.textContent = 'Score : ' + score;
         }
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') addItem();
-        });
-    </script>
+        // Collision detection
+        const obsRect = obs.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
+        if (!(obsRect.right < playerRect.left ||
+              obsRect.left > playerRect.right ||
+              obsRect.bottom < playerRect.top ||
+              obsRect.top > playerRect.bottom)) {
+            endGame();
+        }
+    });
+}
 
+function endGame() {
+    clearInterval(gameInterval);
+    obstacles.forEach(o => o.remove());
+    obstacles = [];
+    gameOver = true;
+    alert('Game Over ! Ton score : ' + score);
+}
+
+function startGame() {
+    score = 0;
+    gameOver = false;
+    scoreDisplay.textContent = 'Score : 0';
+    player.style.left = '180px';
+    gameInterval = setInterval(() => {
+        if (Math.random() < 0.03) createObstacle();
+        moveObstacles();
+    }, 20);
+}
+
+startBtn.addEventListener('click', startGame);
+</script>
 </body>
 </html>
